@@ -1,28 +1,27 @@
 import java.io.*;
 import java.net.*;
 
-public class Client {
+public class Client implements Runnable {
 	
 	final static String DEFAULT_HOST = "localhost";
 	final static int DEFAULT_PORT = 4455;
+	static boolean closed = false;
+	static Socket clientSocket = null;
+	static PrintWriter out = null;
+	static BufferedReader in = null;
 	
     public static void main(String[] args) throws IOException {
-    	
-        Socket kkSocket = null;
-        PrintWriter out = null;
-        BufferedReader in = null;
-
         try {
         	if(args.length < 2)
         	{
-        		kkSocket = new Socket(DEFAULT_HOST, DEFAULT_PORT);
+        		clientSocket = new Socket(DEFAULT_HOST, DEFAULT_PORT);
         	}
         	else
         	{
-        		kkSocket = new Socket(args[0], Integer.parseInt(args[1]));
+        		clientSocket = new Socket(args[0], Integer.parseInt(args[1]));
         	}
-            out = new PrintWriter(kkSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(kkSocket.getInputStream()));
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         } catch (UnknownHostException e) {
             System.err.println("Don't know about this host.");
             System.exit(1);
@@ -32,24 +31,44 @@ public class Client {
         }
 
         BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-        String fromServer;
         String fromUser;
-        
-        while ((fromServer = in.readLine()) != null) {
-            System.out.println("Server: " + fromServer);
-            if (fromServer.equals("Bye."))
-                break;
-		   
-            fromUser = stdIn.readLine();
-		    if (fromUser != null) {
-	                System.out.println("Me : " + fromUser);
-	                out.println(fromUser);
-		    }
-        }
 
+		// Create a thread to read from the server
+    	new Thread(new Client()).start();
+    	
+		while (!closed)
+		{
+			// this thread just reads from the stdIn and writes to the Server
+			fromUser = stdIn.readLine();
+			if (fromUser != null) 
+			{
+		        // System.out.println("Me : " + fromUser);
+		        out.println(fromUser);
+			}
+        }
+		
         out.close();
         in.close();
         stdIn.close();
-        kkSocket.close();
+        clientSocket.close();  
     }
+
+	@Override
+	public void run() {
+		
+        String fromServer;
+        try {
+			while ((fromServer = in.readLine()) != null) {
+			    System.out.println(fromServer);
+			    if (fromServer.equals("bye"))
+			    {
+			    	closed = true;
+			        break;    
+			    }
+			}
+		} 
+        catch (IOException e) {
+        	System.err.println("IOException:  " + e);
+		}
+	}
 }

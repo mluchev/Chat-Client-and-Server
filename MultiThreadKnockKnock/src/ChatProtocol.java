@@ -1,10 +1,11 @@
 
 public class ChatProtocol {
 
-	private static final int WAITING = 0;
+	private static final int WAITING_TO_REGISTER = 0;
 	private static final int WORKING = 1;
 	private MultiServerThread thread = null;
-    private int state = WAITING;
+    private int state = WAITING_TO_REGISTER;
+    public String receiver = null;
     
     public ChatProtocol(MultiServerThread thread)
     {
@@ -13,7 +14,9 @@ public class ChatProtocol {
     
 	public String processInput(String s)
 	{
-		if(state == WAITING)
+		receiver = null;
+		
+		if(state == WAITING_TO_REGISTER)
 		{
 			if(s.startsWith("user "))
 			{
@@ -25,7 +28,7 @@ public class ChatProtocol {
 							&& MultiServer.users[i].username.equals(username))
 						return "100 err " + username +" already taken!";
 				}
-				this.thread.username = username;
+				MultiServer.users[this.thread.numInRegistry].username = username;
 				state = WORKING;	
 				return "200 OK " + username + " successfully registered.";
 			}
@@ -36,8 +39,30 @@ public class ChatProtocol {
 		}
 		else if (state == WORKING)
 		{
+			String[] messageParts = s.split(" ");
+			String messageType = messageParts[0];
 			
+			if(messageType.equals("send_to"))
+			{
+				if(messageParts.length >= 3)
+				{
+					this.receiver = messageParts[1];
+					StringBuilder message = new StringBuilder("");
+					for(int i = 2; i < messageParts.length; i++)
+					{
+						message.append(messageParts[i]);
+					}
+					return message.toString();
+					
+				}
+				else
+				{
+					return "Try again! Use this format: send_to <username> <single_line_message>";
+				}
+				
+				
+			}
 		}
-		return "";
+		return "Give me somethong different!";
 	}
 }

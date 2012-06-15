@@ -46,8 +46,7 @@ public class MultiServer {
     			    users[i].start();
     			    break;
     			}
-    		}
- 
+    		}      	
         }
 
         serverSocket.close();
