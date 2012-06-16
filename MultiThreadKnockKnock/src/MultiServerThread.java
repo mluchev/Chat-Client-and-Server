@@ -28,8 +28,10 @@ public class MultiServerThread extends Thread {
 		    while ((inputLine = in.readLine()) != null) 
 		    {
 		    	outputLine = chatProtocol.processInput(inputLine);
+		    	
 		    	if (outputLine.equals("bye"))
 					  break;
+		    	// will be used for list\r\n
 		    	if(chatProtocol.receiver == null)
 		    	{
 		    		out = new PrintWriter(this.socket.getOutputStream(), true);
@@ -37,9 +39,10 @@ public class MultiServerThread extends Thread {
 		    	}
 		    	else
 		    	{
-		    		// send to all users
+		    		// empty string is default value for all users
 		    		if(chatProtocol.receiver == "")
 		    		{
+		    			boolean hasFoundUser = false;
 		    			for(int i = 0; i < MultiServer.users.length; i++)
 		    			{
 		    				if(MultiServer.users[i] != null 
@@ -48,7 +51,19 @@ public class MultiServerThread extends Thread {
 		    				{
 		    					out = new PrintWriter(MultiServer.users[i].socket.getOutputStream(), true);	
 		    					out.println(this.username + ": " + outputLine);
+		    					hasFoundUser = true;
+		    					
 		    				}
+		    			}
+		    			if(hasFoundUser)
+		    			{
+		    				out = new PrintWriter(this.socket.getOutputStream(), true);	
+	    					out.println("200 ok message sent successfully.");
+		    			}
+		    			else
+		    			{
+		    				out = new PrintWriter(this.socket.getOutputStream(), true);	
+	    					out.println("100 err server error!");
 		    			}
 		    			continue;
 		    		}
@@ -62,8 +77,11 @@ public class MultiServerThread extends Thread {
 		    						&& MultiServer.users[i].username != null 
 		    						&& MultiServer.users[i].username.equals(chatProtocol.receiver))
 		    				{
+		    					
 		    					out = new PrintWriter(MultiServer.users[i].socket.getOutputStream(), true);	
 		    					out.println(this.username + ": " + outputLine);
+		    					out = new PrintWriter(this.socket.getOutputStream(), true);	
+		    					out.println("200 ok message to " + chatProtocol.receiver + " sent successfully.");
 		    					hasFoundUser = true;
 		    					break;
 		    				}
@@ -71,11 +89,9 @@ public class MultiServerThread extends Thread {
 		    			if(!hasFoundUser)
 		    			{
 			    			out = new PrintWriter(this.socket.getOutputStream(), true);	
-	    					out.println("Server: There is not such user online.");
+	    					out.println("100 err " + chatProtocol.receiver + " does not exist!");
 	    					continue;
 		    			}
-		    			
-		    			
 		    			
 		    		}
 		    	}

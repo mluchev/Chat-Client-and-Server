@@ -51,6 +51,7 @@ public class ChatProtocol {
 					for(int i = 2; i < messageParts.length; i++)
 					{
 						message.append(messageParts[i]);
+						message.append(" ");
 					}
 					return message.toString();
 					
@@ -59,10 +60,51 @@ public class ChatProtocol {
 				{
 					return "Try again! Use this format: send_to <username> <single_line_message>";
 				}
+			}
+			else if(messageType.equals("send_all"))
+			{
+				if(messageParts.length >= 2)
+				{
+					StringBuilder message = new StringBuilder("");
+					for(int i = 1; i < messageParts.length; i++)
+					{
+						message.append(messageParts[i]);
+						message.append(" ");
+					}
+					// empty string is default value for all users
+					this.receiver = "";
+					return message.toString();
+					
+				}
+				else
+				{
+					return "Try again! Use this format: send_to <username> <single_line_message>";
+				}
+			}
+			else if(messageType.equals("list")) // if(s.equals("list"))
+			{
 				
+				if(messageParts.length == 1)
+				{
+					StringBuilder message = new StringBuilder("");
+					for(int i = 0; i < MultiServer.users.length; i++)
+					{
+						if(MultiServer.users[i] != null 
+								&& MultiServer.users[i].username != null)
+						{
+							message.append(MultiServer.users[i].username);
+							message.append(" ");
+						}	
+					}
+					return message.toString();
+				}
+				else
+				{
+					return "Try again! Use this format: list";
+				}
 				
 			}
 		}
-		return "Give me somethong different!";
+		return "Give me something different!";
 	}
 }
