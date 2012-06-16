@@ -59,12 +59,12 @@ public class Client implements Runnable {
         String fromServer;
         try {
 			while ((fromServer = in.readLine()) != null) {
-			    System.out.println(fromServer);
-			    if (fromServer.equals("bye"))
+				if (fromServer.equals("bye"))
 			    {
 			    	closed = true;
-			        break;    
+			        System.exit(0);    
 			    }
+			    System.out.println(fromServer);
 			}
 		} 
         catch (IOException e) {
